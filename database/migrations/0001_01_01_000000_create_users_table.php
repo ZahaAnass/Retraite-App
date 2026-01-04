@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            // 'admin', 'retraite', 'demandeur'
+            $table->string('role')->default('demandeur');
+            $table->text('bio')->nullable(); // For retiree profile
             $table->rememberToken();
             $table->timestamps();
         });
