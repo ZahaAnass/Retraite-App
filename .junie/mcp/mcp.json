@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "/usr/bin/php",
+            "args": [
+                "/home/anass/Desktop/github repo/Retraite-App/artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}
