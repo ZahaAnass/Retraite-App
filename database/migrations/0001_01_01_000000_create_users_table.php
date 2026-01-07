@@ -19,6 +19,7 @@ return new class extends Migration
             // 'admin', 'retraite', 'demandeur'
             $table->string('role')->default('demandeur');
             $table->text('bio')->nullable(); // For retiree profile
+            $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
