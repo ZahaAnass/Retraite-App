@@ -23,7 +23,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
 
     // --- RETIREE AREA ---
-    // Only 'retraite' role can manage services
     Route::middleware('role:retraite')->group(function () {
         Route::get('/my-services', [ServiceController::class, 'myServices'])->name('services.mine');
         Route::get('/services/create', [ServiceController::class, 'create'])->name('services.create');
@@ -32,9 +31,15 @@ Route::middleware('auth')->group(function () {
     });
 
     // --- ADMIN AREA ---
-    // Only 'admin' can manage users
     Route::middleware('role:admin')->group(function () {
+        // 1. Dashboard (Stats)
         Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+
+        // 2. Separate Management Pages
+        Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+        Route::get('/admin/services', [AdminController::class, 'services'])->name('admin.services');
+
+        // 3. Delete Actions
         Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
         Route::delete('/admin/services/{service}', [AdminController::class, 'deleteService'])->name('admin.deleteService');
     });

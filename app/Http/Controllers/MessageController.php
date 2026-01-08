@@ -17,15 +17,17 @@ class MessageController extends Controller
     }
 
     public function chat(User $user) {
+
+        if (Auth::id() === $user->id) {
+            return redirect()->route('messages.index');
+        }
+
         // 1. Fetch conversation history
         $messages = Message::where(function($q) use ($user) {
             $q->where('sender_id', Auth::id())->where('receiver_id', $user->id);
         })->orWhere(function($q) use ($user) {
             $q->where('sender_id', $user->id)->where('receiver_id', Auth::id());
         })->orderBy('created_at', 'asc')->get();
-
-        // ❌ DELETED THE ABORT(404) BLOCK HERE
-        // We want to allow opening a chat even if messages are empty (new chat)
 
         // 2. Return the view with Contacts (for sidebar) and Messages
         return Inertia::render('Messages/Chat', [

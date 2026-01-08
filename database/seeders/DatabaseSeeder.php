@@ -11,8 +11,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Create specific accounts for testing (Password: 'password')
-
+        // 1. MAIN ACCOUNTS (for your demo)
         $admin = User::factory()->create([
             'name' => 'Super Admin',
             'email' => 'admin@example.com',
@@ -23,7 +22,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Jean Retraité',
             'email' => 'retraite@example.com',
             'role' => 'retraite',
-            'bio' => 'Ancien ingénieur passionné de bricolage et de jardinage.',
+            'bio' => 'Expert en tout, passionné par rien.',
         ]);
 
         $demandeur = User::factory()->create([
@@ -32,43 +31,55 @@ class DatabaseSeeder extends Seeder
             'role' => 'demandeur',
         ]);
 
-        // 2. Create Services for our main Retiree
-        Service::factory(3)->create(['user_id' => $retraite->id]);
-
-        // 3. Create 10 other random Retirees with 2 services each
-        User::factory(10)->create(['role' => 'retraite'])->each(function ($user) {
-            Service::factory(2)->create(['user_id' => $user->id]);
+        // 2. MASS USERS GENERATION
+        // Create 40 Retirees with 1 to 4 services each
+        $retirees = User::factory(40)->create(['role' => 'retraite'])->each(function ($u) {
+            Service::factory(rand(1, 4))->create(['user_id' => $u->id]);
         });
 
-        // 4. Create 5 other random Demandeurs
-        User::factory(5)->create(['role' => 'demandeur']);
+        // Create 60 Demandeurs
+        $demandeurs = User::factory(60)->create(['role' => 'demandeur']);
 
+        // Merge all users for messaging logic
+        $allUsers = $retirees->merge($demandeurs)->push($retraite, $demandeur);
 
-        // Chat: Demandeur -> Retraité
-        Message::create([
-            'sender_id' => $demandeur->id,
-            'receiver_id' => $retraite->id,
-            'content' => 'Bonjour Jean, je suis intéressé par vos services de jardinage.',
-            'created_at' => now()->subHours(5),
-        ]);
+        // 3. MASS MESSAGES GENERATION (Conversations)
 
-        Message::create([
-            'sender_id' => $retraite->id,
-            'receiver_id' => $demandeur->id,
-            'content' => 'Bonjour Sophie ! Avec plaisir. Quelle est la surface de votre jardin ?',
-            'created_at' => now()->subHours(4),
-        ]);
+        // Let's create 300 active conversations
+        for ($i = 0; $i < 300; $i++) {
+            // Pick two random distinct users
+            $userA = $allUsers->random();
+            $userB = $allUsers->where('id', '!=', $userA->id)->random();
 
-        Message::create([
-            'sender_id' => $demandeur->id,
-            'receiver_id' => $retraite->id,
-            'content' => 'Environ 50m2. Êtes-vous disponible samedi ?',
-            'created_at' => now()->subHours(2),
-        ]);
+            // Create a conversation history of 5 to 20 messages between them
+            $msgCount = rand(5, 20);
+            $startDate = now()->subDays(rand(1, 60));
 
-        // Chat: Random User -> Retraité
-        Message::factory(3)->create([
-            'receiver_id' => $retraite->id,
-        ]);
+            for ($j = 0; $j < $msgCount; $j++) {
+                // Alternate sender
+                $sender = ($j % 2 === 0) ? $userA : $userB;
+                $receiver = ($sender->id === $userA->id) ? $userB : $userA;
+
+                Message::factory()->create([
+                    'sender_id' => $sender->id,
+                    'receiver_id' => $receiver->id,
+                    // Messages happen every few minutes/hours after start date
+                    'created_at' => $startDate->copy()->addMinutes($j * rand(10, 120)),
+                ]);
+            }
+        }
+
+        // 4. Ensure "Jean Retraité" has a lot of messages for the Demo
+        $jeansPartners = $demandeurs->random(5); // Jean talks to 5 random people
+        foreach ($jeansPartners as $partner) {
+            for ($k = 0; $k < 15; $k++) {
+                Message::factory()->create([
+                    'sender_id' => ($k % 2 === 0) ? $partner->id : $retraite->id,
+                    'receiver_id' => ($k % 2 === 0) ? $retraite->id : $partner->id,
+                    'created_at' => now()->subDays(2)->addHours($k),
+                    'content' => "Message de test numéro $k pour la démo."
+                ]);
+            }
+        }
     }
 }

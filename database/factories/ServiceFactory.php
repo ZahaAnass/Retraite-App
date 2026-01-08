@@ -9,17 +9,18 @@ class ServiceFactory extends Factory
 {
     public function definition(): array
     {
-        $services = [
-            'Cours de Mathématiques', 'Jardinage et Potager', 'Bricolage à domicile',
-            'Garde d\'animaux', 'Cours de Piano', 'Aide administrative',
-            'Cuisine traditionnelle', 'Couture et Retouches'
+        $categories = [
+            'Mathématiques', 'Anglais', 'Physique', 'Piano', 'Guitare',
+            'Jardinage', 'Plomberie', 'Électricité', 'Peinture',
+            'Couture', 'Tricot', 'Cuisine', 'Pâtisserie',
+            'Garde d\'animaux', 'Aide administrative', 'Comptabilité'
         ];
 
         return [
-            'user_id' => User::factory(), // Will be overridden in Seeder
-            'title' => fake()->randomElement($services) . ' - ' . fake()->city(),
-            'description' => fake()->paragraph(3) . "\n\nJe suis disponible le matin.",
-            'price' => fake()->randomElement([null, 15, 20, 30, 50]), // Null = Free
+            'user_id' => User::factory(),
+            'title' => 'Cours de ' . fake()->randomElement($categories) . ' - ' . fake()->city(),
+            'description' => fake()->paragraph(5) . "\n\nDisponibilité : " . fake()->dayOfWeek(),
+            'price' => fake()->randomElement([null, 10, 15, 20, 25, 30, 40, 50]),
         ];
     }
 }

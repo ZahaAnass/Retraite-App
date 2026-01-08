@@ -1,79 +1,122 @@
-import DashboardLayout from '@/layouts/DashboardLayout';
-import { Head, router } from '@inertiajs/react';
-import { Trash2, Users, Briefcase } from 'lucide-react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { Briefcase, Users, ArrowRight, UserPlus, FileText } from 'lucide-react';
 
-export default function AdminDashboard({ users, services, stats }: any) {
-    const handleDeleteUser = (id: number) => {
-        if(confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) router.delete(route('admin.deleteUser', id));
-    };
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Administration', href: '/admin' },
+];
 
+export default function AdminDashboard({ stats, recent }: any) {
     return (
-        <DashboardLayout>
-            <Head title="Administration" />
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Admin Dashboard" />
 
-            <h1 className="text-2xl font-bold text-zinc-900 mb-6">Vue d'ensemble</h1>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-lg border border-zinc-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-zinc-500">Utilisateurs inscrits</p>
-                        <p className="text-3xl font-bold text-zinc-900 mt-1">{stats.total_users}</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 rounded-full text-blue-600"><Users className="w-6 h-6" /></div>
+            <div className="flex flex-col gap-6 p-4">
+                <div className="px-1">
+                    <h1 className="text-2xl font-bold text-foreground">Vue d'ensemble</h1>
+                    <p className="text-muted-foreground">Statistiques et activités récentes.</p>
                 </div>
-                <div className="bg-white p-6 rounded-lg border border-zinc-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-zinc-500">Services actifs</p>
-                        <p className="text-3xl font-bold text-zinc-900 mt-1">{stats.total_services}</p>
+
+                {/* --- STATS SECTION --- */}
+                <div className="grid gap-4 md:grid-cols-2">
+                    {/* User Stat Card */}
+                    <div className="rounded-xl border border-sidebar-border bg-sidebar dark:bg-sidebar/50 p-6 shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                                    <Users className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Utilisateurs</p>
+                                    <h3 className="text-2xl font-bold text-foreground">{stats.total_users}</h3>
+                                </div>
+                            </div>
+                            <Link href="/admin/users" className="text-sm font-medium text-blue-600 hover:underline flex items-center">
+                                Gérer <ArrowRight className="ml-1 h-4 w-4" />
+                            </Link>
+                        </div>
                     </div>
-                    <div className="p-3 bg-green-50 rounded-full text-green-600"><Briefcase className="w-6 h-6" /></div>
+
+                    {/* Service Stat Card */}
+                    <div className="rounded-xl border border-sidebar-border bg-sidebar dark:bg-sidebar/50 p-6 shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                                    <Briefcase className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Services</p>
+                                    <h3 className="text-2xl font-bold text-foreground">{stats.total_services}</h3>
+                                </div>
+                            </div>
+                            <Link href="/admin/services" className="text-sm font-medium text-green-600 hover:underline flex items-center">
+                                Gérer <ArrowRight className="ml-1 h-4 w-4" />
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- RECENT ACTIVITY SECTION --- */}
+                <div className="grid gap-6 md:grid-cols-2">
+
+                    {/* Recent Users Column */}
+                    <div className="rounded-xl border border-sidebar-border bg-sidebar dark:bg-sidebar/50 shadow-sm overflow-hidden">
+                        <div className="p-4 border-b border-sidebar-border flex items-center gap-2">
+                            <UserPlus className="h-4 w-4 text-muted-foreground" />
+                            <h3 className="font-semibold text-foreground">Derniers Inscrits</h3>
+                        </div>
+                        <div className="divide-y divide-sidebar-border">
+                            {recent.users.map((user: any) => (
+                                <div key={user.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
+                                            {user.name[0]}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-foreground">{user.name}</p>
+                                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">
+                                        {new Date(user.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            ))}
+                            {recent.users.length === 0 && <p className="p-4 text-sm text-muted-foreground text-center">Aucun inscrit.</p>}
+                        </div>
+                    </div>
+
+                    {/* Recent Services Column */}
+                    <div className="rounded-xl border border-sidebar-border bg-sidebar dark:bg-sidebar/50 shadow-sm overflow-hidden">
+                        <div className="p-4 border-b border-sidebar-border flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <h3 className="font-semibold text-foreground">Derniers Services</h3>
+                        </div>
+                        <div className="divide-y divide-sidebar-border">
+                            {recent.services.map((service: any) => (
+                                <div key={service.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-8 w-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400">
+                                            S
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-foreground line-clamp-1">{service.title}</p>
+                                            <p className="text-xs text-muted-foreground">par {service.user.name}</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-xs font-medium text-green-600 dark:text-green-400 whitespace-nowrap ml-2">
+                                        {service.price ? `${service.price}€` : 'Gratuit'}
+                                    </span>
+                                </div>
+                            ))}
+                            {recent.services.length === 0 && <p className="p-4 text-sm text-muted-foreground text-center">Aucun service.</p>}
+                        </div>
+                    </div>
+
                 </div>
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Users Table */}
-                <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-sm">
-                    <div className="px-6 py-4 border-b border-zinc-200 font-bold text-zinc-900">Utilisateurs récents</div>
-                    <table className="w-full text-left text-sm">
-                        <tbody className="divide-y divide-zinc-100">
-                        {users.map((u: any) => (
-                            <tr key={u.id} className="hover:bg-zinc-50">
-                                <td className="px-6 py-3 font-medium">{u.name}</td>
-                                <td className="px-6 py-3"><span className="px-2 py-1 rounded-full text-xs font-medium bg-zinc-100 border border-zinc-200">{u.role}</span></td>
-                                <td className="px-6 py-3 text-right">
-                                    {u.role !== 'admin' && (
-                                        <button onClick={() => handleDeleteUser(u.id)} className="text-red-600 hover:bg-red-50 p-1.5 rounded">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Services Table */}
-                <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-sm">
-                    <div className="px-6 py-4 border-b border-zinc-200 font-bold text-zinc-900">Derniers Services</div>
-                    <table className="w-full text-left text-sm">
-                        <tbody className="divide-y divide-zinc-100">
-                        {services.map((s: any) => (
-                            <tr key={s.id} className="hover:bg-zinc-50">
-                                <td className="px-6 py-3 font-medium truncate max-w-[150px]">{s.title}</td>
-                                <td className="px-6 py-3 text-zinc-500">{s.user.name}</td>
-                                <td className="px-6 py-3 text-right">
-                                    <button onClick={() => router.delete(route('admin.deleteService', s.id))} className="text-red-600 hover:bg-red-50 p-1.5 rounded">
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </DashboardLayout>
+        </AppLayout>
     );
 }
